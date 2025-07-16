@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+  <h4>[[${list}]]</h4> <!-- 인라인 표현법: 태그 안쪽에 사용-->
+
+  <hr>
+  <h4 th:text="${list}"></h4>
+  <hr>
+  <div th:with="num1 = ${10}, num2 = ${20}"> <!-- 임시변수 선언-->
+      <h4 th:text="${num1 + num2}"></h4> <!-- 표현식 안에서 계산이 된다.-->
+  </div>
+  <hr>
+  <!--반복문 처리 방법 list ->str-->
+  <!-- 반복이 필요한 태그에 th:each를 (향상된 for) 적용 -->
+  <ul>
+      <li th:each="str:${list}" th:text="${str}"></li>
+  </ul> <!--태그 안에 속성값으로 반복문 사용-->
+
+  <!-- thL:block 별도의 태그로 사용도 가능-->
+  <ul>
+      <th:block th:each="str:${list}">
+          <li>[[${str}]]</li>
+      </th:block>
+  </ul>
+
+  <!-- 반복문에서 상태값을 가지고 있는 복구 가능!-->
+  <!-- th:each 를 처리할 때 내부 상태에 변수를 추가해서 사용 가능-->
+  <!-- status 변수 ->index/count/size/first/last/odd/even 값을 사용 가능-->
+  <ul> <!-- 인덱스 사용-->
+      <li th:each="str,status:${list}">
+          [[${status.index}]] -- [[${str}]]
+      </li>
+  </ul>
+
+  <ul> <!-- 홀수와 짝수를 구분해서 처리-->
+      <li th:each="str,status:${list}">
+          <span th:if="${status.odd}"> ODD -- [[${str}]]></span>
+          <span th:unless="${status.odd}"> EVEN -- [[${str}]]></span>
+      </li>
+  </ul>
+
+  <ul> <!-- 이항.삼항 처리, 홀수 번째만 보여주는 것-->
+      <li th:each="str,status:${list}">
+          <span th:text="${status.odd} ? 'ODD ---'+ ${str}"></span>
+      </li>
+  </ul>
+
+  <ul> <!-- 삼항 연산자 그대로 사용-->
+      <li th:each="str,status:${list}">
+          <span th:text="${status.odd} ? 'ODD ---'+ ${str} : 'EVEN ---'+ ${str}"></span>
+      </li>
+  </ul>
+
+  <ul> <!-- Switch문 처리-->
+      <li th:each="str,status:${list}">
+          <th:block th:switch="${status.index %3}">
+              <span th:case="0">0</span>
+              <span th:case="1">1</span>
+              <span th:case="2">2</span>
+          </th:block>
+      </li>
+  </ul>
+
+  <a th:href="@{/hello}">컨트롤러에서 HELLO 경로를 찾는다 </a>
+  <hr>
+  <a th:href="@{/hello(name='AAA', age=16)}"> 클릭 후 URL확인</a>
+  <hr>
+  <a th:href="@{/hello(types=${ {'요리사', '건축가', '운동선수', '선생님'} }, age=16)}"> 클릭 후 URL확인</a>
+</body>
+</html>
