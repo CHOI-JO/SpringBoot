@@ -50,8 +50,10 @@ public class Board extends BaseEntity{ //  extends BaseEntity (날짜 관련된 
     //    alter table if exists board
     //       modify column writer varchar(50) not null
 
-    public void change(String title, String content) {
-        this.title=title;
-        this.content=content;
+    public void change(String title, String content){
+        // 제목과 내용만 수정하는 메서드 (세터 대체용)
+        this.title = title;
+        this.content = content;
     }
+
 }
