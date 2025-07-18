@@ -41,81 +41,252 @@ public class BoardRepositoryTests {
                 }// forEach문 종료
         );// IntStream. 종료
 
-    }
+    } // testInsert 메서드 종료
 
     @Test
-    public void testSelect() {
-        Long bno = 100L; //게시물 번호가 100인 개체를 확인해보자
+    public void testSelect(){
+        Long bno = 100L; // 게시물 번호가 100인 개체를 확인 해보자.
 
         Optional<Board> result = boardRepository.findById(bno);
-        // optional 널값이 나올 경우를 대비한 객체
-        // findById=select * from board where bno=bno
+        // Optional 널값이 나올 경우를 대비한 객체
+        //                                    .findById(bno) ->  select * from board where bno = bno;
+        // Hibernate:
+        //    select
+        //        b1_0.bno,
+        //        b1_0.content,
+        //        b1_0.moddate,
+        //        b1_0.regdate,
+        //        b1_0.title,
+        //        b1_0.writer
+        //    from
+        //        board b1_0
+        //    where
+        //        b1_0.bno=?
 
-        Board board=result.orElseThrow(); //값이 있으면 넣어라
+        Board board = result.orElseThrow(); // 값이 있으면 넣어라
 
-        log.info(bno + "가 데이터 베이스에 존재합니다.");
-        log.info(board);
+        log.info(bno + "가 데이터 베이스에 존재합니다. ");
+        log.info(board) ; // Board(bno=100, title=제목...100, content=내용...100, writer=user0)
+    }  // testSelect 메서드 종료
+
+    @Test
+    public void testUpdate(){
+
+        Long bno = 100L; // 100번 게시물을 가져와서 수정후 테스트 종료
+
+        Optional<Board> result = boardRepository.findById(bno); // bno 를 찾아서 result에 넣는다.
+
+        Board board = result.orElseThrow(); // 가져온 값이 있으면 board 타입에 객체에 넣는다.
+
+        board.change("수정테스트 제목", "수정테스트 내용"); // 제목과 내용만 수정할 수 있는 메서드
+
+        boardRepository.save(board); // .save 메서드는 pk값이 없으면 insert, pk 있으면 update 함.
+
+        //Hibernate:
+        //    select
+        //        b1_0.bno,
+        //        b1_0.content,
+        //        b1_0.moddate,
+        //        b1_0.regdate,
+        //        b1_0.title,
+        //        b1_0.writer
+        //    from
+        //        board b1_0
+        //    where
+        //        b1_0.bno=?
+        //Hibernate:
+        //    select
+        //        b1_0.bno,
+        //        b1_0.content,
+        //        b1_0.moddate,
+        //        b1_0.regdate,
+        //        b1_0.title,
+        //        b1_0.writer
+        //    from
+        //        board b1_0
+        //    where
+        //        b1_0.bno=?
+        //Hibernate:
+        //    update
+        //        board
+        //    set
+        //        content=?,
+        //        moddate=?,
+        //        title=?,
+        //        writer=?
+        //    where
+        //        bno=?
     }
 
     @Test
-    public void upDate() {
-        Long bno = 100L; //100번째 게시물을 가져와서 수정 후 테스트 종료
-        Optional<Board> result = boardRepository.findById(bno); //bno를 찾아서 result에 넣는다
-        Board board = result.orElseThrow(); // 가져온 값이 있으면 board 타입에 객체에 넣는다
-        board.change("수정 테스트 제목", "수정 테스트 내용");// 제목과 내용만 수정할 수 잇는 메서드
-        boardRepository.save(board);
-    }
+    public void testDelete(){
 
-    @Test
-    public void testDelete() {
         Long bno = 1L;
+
         boardRepository.deleteById(bno);
+        //             .deleteById(bno) -> delecte from board where bno = bno
+
+        // Hibernate:
+        //    select
+        //        b1_0.bno,
+        //        b1_0.content,
+        //        b1_0.moddate,
+        //        b1_0.regdate,
+        //        b1_0.title,
+        //        b1_0.writer
+        //    from
+        //        board b1_0
+        //    where
+        //        b1_0.bno=?
+        //Hibernate:
+        //    delete
+        //    from
+        //        board
+        //    where
+        //        bno=?
     }
 
     @Test
-    public void testPaging() {
-        //.fildAll() 는 모든 리스트를 출력하는 메서드 select * from board
-        // 전체 리스트에 페이징과 정렬 기법도 추가해보자.
+    public void testPaging(){
+        // .findAll() 는 모든 리스트를 출력하는 메서드 select * from board ;
+        // 전체 리스트에 페이징과 정렬 기법도 추가 해보자.
 
-        Pageable pageable = PageRequest.of(19, 5, Sort.by("bno").descending());
-        // 시작 번호, 10개 목록, 번호를 기준으로 내림차순 정렬
+        Pageable pageable = PageRequest.of(0,10, Sort.by("bno").descending());
+        //                           시작번호,페이지당 데이터 개수
+        //                                       번호를 기준으로 내림차순 정렬!!!
+        // Hibernate:
+        //    select
+        //        b1_0.bno,
+        //        b1_0.content,
+        //        b1_0.moddate,
+        //        b1_0.regdate,
+        //        b1_0.title,
+        //        b1_0.writer
+        //    from
+        //        board b1_0
+        //    order by
+        //        b1_0.bno desc  (bno를 기준으로 내림차순 정렬)
+        //    limit
+        //        ?, ?         (시작번호, 끝번호)
 
-//        Hibernate:
-//        select
-//        b1_0.bno,
-//                b1_0.content,
-//                b1_0.moddate,
-//                b1_0.regdate,
-//                b1_0.title,
-//                b1_0.writer
-//        from
-//        board b1_0
-//        order by
-//        b1_0.bno desc
-//        limit
-//                ?, ?
-//        Hibernate:
-//        select
-//        count(b1_0.bno)
-//        from
-//        board b1_0
-
+        //Hibernate:
+        //    select
+        //        count(b1_0.bno)   board 전체 리스트 수를 알아옴.
+        //    from
+        //        board b1_0
         Page<Board> result = boardRepository.findAll(pageable);
-        // 한 장에 종이에 Board 객체를 가지고 있는 결과는 result에 넣는다.
-        // page class는 다음 페이지 존재 여부, 이전 페이지 존재 여부, 전체 데이터 개수 등등등....계산한다.
+        // 1장에 종이에 Board 객체를 가지고 있는 결과는 result 에 담긴다.
+        // Page 클래스는 다음페이지 존재 여부, 이전페이지 존재 여부, 전체 데이터 개수, 등등.... 계산을 한다.
 
-        log.info("전체 게시물 수: " +result.getTotalElements()); //99
-        log.info("전체 페이지 수: " + result.getTotalPages()); //10
-        log.info("현제 페이지 번호: " +result.getNumber());
-        log.info("페이지당 데이터 개수: " +result.getSize());
-        log.info("다음 페이지 여부: " + result.hasNext());
-        log.info("시작 페이지 여부: " +result.isFirst());
+        log.info("전체 게시물 수 : " + result.getTotalElements());  // 99
+        log.info("총 페이지 수 : " + result.getTotalPages());       // 10
+        log.info("현재 페이지 번호 : " + result.getNumber());       // 0
+        log.info("페이지당 데이터 개수 : " + result.getSize() );     // 10
+        log.info("다음페이지 여부 : " + result.hasNext());          // true
+        log.info("시작페이지 여부 : " + result.isFirst());         // true
 
         // 콘솔에 결과를 출력해보자.
+        List<Board> boardList = result.getContent(); // 페이징처리된 내용을 가져와라
 
-        List<Board> boardList = result.getContent(); // 페이징 처리된 내용을 가져와라
-        boardList.forEach(board -> log.info(board)); //람다식
-        // forEach문은 인덱스를 사용하지 않고 앞에서부터 객체를 리턴함
-        // board -> log.info(board) 람다식: 1개의 명령어가 있을 때 활용
+        boardList.forEach(board -> log.info(board));
+        //   forEach는 인덱스를 사용하지 않고 앞에서부터 객체를 리턴함
+        //                board -> log.info(board)
+        //                      람다식 1개의 명령어가 있을 때 활용
+
     }
-}
+
+    // 쿼리dsl 테스트 진행
+    @Test
+    public void testSearch1(){
+
+        Pageable pageable = PageRequest.of(1,10, Sort.by("bno").descending());
+
+        Page<Board> result = boardRepository.search1(pageable); //페이징 기법을 사용해서 title = 1 값을 찾아 오나?
+
+        result.getContent().forEach(board -> log.info(board));
+
+        //Hibernate:
+        //    select
+        //        b1_0.bno,
+        //        b1_0.content,
+        //        b1_0.moddate,
+        //        b1_0.regdate,
+        //        b1_0.title,
+        //        b1_0.writer
+        //    from
+        //        board b1_0
+        //    where
+        //        b1_0.title like ? escape '!'  -> like 1  -> 조건이 1개일 경우
+
+        //Hibernate:
+        //    select
+        //        b1_0.bno,
+        //        b1_0.content,
+        //        b1_0.moddate,
+        //        b1_0.regdate,
+        //        b1_0.title,
+        //        b1_0.writer
+        //    from
+        //        board b1_0
+        //    where
+        //        (
+        //            b1_0.title like ? escape '!'
+        //            or b1_0.content like ? escape '!'   -> 조건이 2개 title, content (booleanBuilder)
+        //        )
+        //        and b1_0.bno>?  -> query.where(board.bno.gt(0L))
+        //    order by
+        //        b1_0.bno desc
+        //    limit
+        //        ?, ?   -> this.getQuerydsl().applyPagination(pageable, query);
+        //  PageRequest.of(1,10, Sort.by("bno").descending());
+
+    }
+
+    @Test
+    public void testSearchAll(){
+        // 프론트에서 t가 선택되면 title, c가 선택되면 content, w가 선택되면 writer가 조건으로 제시됨
+
+        String[] types = {"t", "w"};  // 검색 조건
+
+        String keyword = "10";  // 검색 단어
+
+        Pageable pageable = PageRequest.of(0,10, Sort.by("bno").descending());
+
+        Page<Board> result = boardRepository.searchAll(types, keyword, pageable);
+
+        //Hibernate:
+        //    select
+        //        b1_0.bno,
+        //        b1_0.content,
+        //        b1_0.moddate,
+        //        b1_0.regdate,
+        //        b1_0.title,
+        //        b1_0.writer
+        //    from
+        //        board b1_0
+        //    where
+        //        (
+        //            b1_0.title like ? escape '!'
+        //            or b1_0.content like ? escape '!'
+        //            or b1_0.writer like ? escape '!'      //   if( (types != null && types.length >0 ) && keyword !=null ){
+        //        )
+        //        and b1_0.bno>?
+        //    order by
+        //        b1_0.bno desc    // PageRequest.of(0,10, Sort.by("bno").descending());
+        //    limit
+        //        ?, ?
+
+
+        log.info("전체 게시물 수 : " + result.getTotalElements());  // 99
+        log.info("총 페이지 수 : " + result.getTotalPages());       // 10
+        log.info("현재 페이지 번호 : " + result.getNumber());       // 0
+        log.info("페이지당 데이터 개수 : " + result.getSize() );     // 10
+        log.info("다음페이지 여부 : " + result.hasNext());          // true
+        log.info("시작페이지 여부 : " + result.isFirst());         // true
+
+        result.getContent().forEach(board -> log.info(board));
+
+    }
+
+
+} // 클래스 종료
